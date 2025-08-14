@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML + Web Project</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <script>
+        // Training data
+        const xs = tf.tensor2d([-1, 0, 1, 2, 3, 4], [6, 1]);
+        const ys = tf.tensor2d([-3, -1, 2, 3, 5, 7], [6, 1]);
+
+        // Build model
+        const model = tf.sequential();
+        model.add(tf.layers.dense({units: 1, inputShape: [1]}));
+        model.compile({
+            loss: 'meanSquaredError',
+            optimizer: 'sgd'
+        });
+
+        let history = model
+
+        // Train
+        async function doTraining() {
+            const history = await model.fit(xs, ys, { epochs: 500,
+                callbacks:{onEpochEnd: async(epoch, logs) =>{console.log("Epoch:"+ epoch + " Loss:" + logs.loss);}}
+            });
+            //alert(model.predict(tf.tensor2d([10], [1, 1])));
+            console.log("Training Complete!");
+        }
+
+        // Predict function
+        async function makePrediction() {
+            const inputVal = parseFloat(document.getElementById("enterNumber").value);
+            const outputBox = document.getElementById("outputBox");
+
+            if (isNaN(inputVal)) {
+                outputBox.innerText = "Please enter a valid number!";
+                return;
+            }
+
+            const output = model.predict(tf.tensor2d([inputVal], [1, 1]));
+            const prediction = output.dataSync()[0];
+            outputBox.innerText = "Predicted output is: " + prediction.toFixed(2);
+        }
+
+        // Start training when page loads
+        window.onload = doTraining;
+    </script>
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          background-color: #f8f9fa;
+          text-align: center;
+          padding-top: 50px;
+        }
+    
+        h1 {
+          color: #333;
+          margin-bottom: 20px;
+        }
+    
+        input[type="number"] {
+          width: 250px;
+          padding: 10px;
+          font-size: 16px;
+          border: 2px solid #ccc;
+          border-radius: 6px;
+          outline: none;
+          transition: border-color 0.3s;
+        }
+    
+        input[type="number"]:focus {
+          border-color: #007bff;
+        }
+    
+        button {
+          padding: 10px 20px;
+          font-size: 16px;
+          background-color: #007bff;
+          color: white;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          margin-left: 10px;
+          transition: background-color 0.3s;
+        }
+    
+        button:hover {
+          background-color: #0056b3;
+        }
+    
+        /* Output box style */
+        #outputBox {
+          margin-top: 20px;
+          width: 300px;
+          height: 50px;
+          line-height: 50px;
+          border: 2px solid #007bff;
+          border-radius: 6px;
+          background-color: #e9f2ff;
+          font-size: 18px;
+          font-weight: bold;
+          display: inline-block;
+          color: #007bff;
+        }
+    </style>
+      
+</head>
+<body>
+    <h1>📊 ML Predictor</h1>
+    <p>Enter a number and watch the model predict!</p>
+    <input id="enterNumber" type="number" placeholder="Enter Number to predict" size="30">
+    <button onclick="makePrediction()">Predict</button>
+    <div id="outputBox">Predicted output will appear here</div>
+
+</body>
+</html>
